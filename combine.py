@@ -2,7 +2,7 @@ import geopandas as gpd
 import pandas as pd
 
 # Load city geolocation data from 2023_Gaz_place_national.txt
-cities_geo = pd.read_csv('/Users/jp2213/gitHub/district_cities/data/2023_Gaz_place_national.txt', sep='\t', dtype={'GEOID': str})
+cities_geo = pd.read_csv('~/gitHub/district-cities/data/2023_Gaz_place_national.txt', sep='\t', dtype={'GEOID': str})
 
 # Print column names to verify correct column names
 print("Cities Geo Columns:", cities_geo.columns)
@@ -31,7 +31,7 @@ selected_columns = [col for col in selected_columns if col in cities_geo.columns
 cities_geo = cities_geo[selected_columns]
 
 # Load city population estimates from SUB-IP-EST2023-POP.xlsx
-city_population = pd.read_excel('/Users/jp2213/gitHub/district_cities/data/SUB-IP-EST2023-POP.xlsx')
+city_population = pd.read_excel('~/gitHub/district-cities/data/SUB-IP-EST2023-POP.xlsx')
 
 # Extract city and state from 'Geographic Area'
 city_population[['city_name', 'state_name']] = city_population['Geographic Area'].str.rsplit(',', n=1, expand=True)
