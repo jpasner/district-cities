@@ -1,6 +1,10 @@
 import geopandas as gpd
 import pandas as pd
+import os
+import glob
 
+
+# Step 1: Load and combine city geolocation and population data
 # Load city geolocation data from 2023_Gaz_place_national.txt
 cities_geo = pd.read_csv('~/gitHub/district-cities/data/2023_Gaz_place_national.txt', sep='\t', dtype={'GEOID': str})
 
@@ -31,7 +35,17 @@ selected_columns = [col for col in selected_columns if col in cities_geo.columns
 cities_geo = cities_geo[selected_columns]
 
 # Load city population estimates from SUB-IP-EST2023-POP.xlsx
-city_population = pd.read_excel('~/gitHub/district-cities/data/SUB-IP-EST2023-POP.xlsx')
+# NOTE: This file was structured for Human Readability, so we need to skip the first 3 rows
+city_population = pd.read_excel('~/gitHub/district-cities/data/SUB-IP-EST2023-POP.xlsx', skiprows=3, header=0)
+
+# Rename the first column to 'Geographic Area' and 2023 to '2023 population estimate'
+# NOTE: Fixing naming due to Human Readability formatting issue
+city_population.rename(columns={city_population.columns[0]: 'Geographic Area'}, inplace=True)
+city_population.rename(columns={2023: '2023 population estimate'}, inplace=True)
+
+# Keep Geographic Area and 2023 Population Estimate columns
+city_population = city_population[['Geographic Area', '2023 population estimate']]
+
 
 # Extract city and state from 'Geographic Area'
 city_population[['city_name', 'state_name']] = city_population['Geographic Area'].str.rsplit(',', n=1, expand=True)
@@ -59,6 +73,7 @@ city_population['state'] = city_population['state_name'].map(state_abbreviations
 combined_cities = pd.merge(city_population, cities_geo, on=['city_name', 'state'], how='left')
 
 # Save the intermediate output
+os.makedirs('output', exist_ok=True)
 combined_cities.to_csv('~/gitHub/district-cities/output/combined_cities.csv', index=False)
 
 # Convert the combined DataFrame to a GeoDataFrame
@@ -69,9 +84,6 @@ cities_gdf = gpd.GeoDataFrame(combined_cities,
 print("City geolocation and population data merged successfully.")
 
 # Step 2: Add congressional district information from multiple zip files
-import glob
-import pandas as pd
-
 # Get all .zip files in the data/tiger_cd_shapefiles folder
 zip_files = glob.glob("data/tiger_cd_shapefiles/*.zip")
 print("Number of zip files:", len(zip_files))
@@ -86,6 +98,7 @@ for zip_file in zip_files:
 congressional_districts = gpd.GeoDataFrame(pd.concat(cd_gdfs, ignore_index=True), crs=cd_gdfs[0].crs)
 
 # Save the combined congressional districts GeoDataFrame to a new shapefile in a .zip file
+os.makedirs('data/combined_cd_shapefile', exist_ok=True)
 output_shp = '~/gitHub/district-cities/data/combined_cd_shapefile/combined_congressional_districts.shp'
 congressional_districts.to_file(output_shp)
 
@@ -99,6 +112,7 @@ cities_with_cd = gpd.sjoin(cities_gdf, congressional_districts, how='left', pred
 cities_with_cd = cities_with_cd.rename(columns={'NAME': 'congressional_district'})
 
 # Save the resulting GeoDataFrame to a new shapefile
+os.makedirs('output/shapefile', exist_ok=True)
 output_shp = '~/gitHub/district-cities/output/shapefile/combined_cities_with_cd.shp'
 cities_with_cd.to_file(output_shp)
 
