@@ -2,6 +2,27 @@
 
 This project processes and merges U.S. city geolocation and population data, and enhances it with congressional district information for spatial analysis.
 
+## Quick Start
+
+Run the following command to download the data and process it:
+
+```bash
+python download_data.py && python combine.py
+```
+
+## Script: `download_data.py`
+
+The `download_data.py` script performs the following steps:
+
+1. **Download and Unzip Gazetteer Data:**
+   - Downloads the [2023 National Gazetteer Places File](https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2023_Gazetteer/2023_Gaz_place_national.zip) and unzips it into the `data` directory.
+
+2. **Download Incorporated Places Data:**
+   - Downloads the [2023 Census file of Incorporated Places](https://www2.census.gov/programs-surveys/popest/tables/2020-2023/cities/totals/SUB-IP-EST2023-POP.xlsx) and saves it to the `data` directory.
+
+3. **Download Congressional District Shapefiles:**
+   - Downloads the Tiger 2023 Congressional District shapefiles from the [2023 | 118th Congress Districts Line Layer](https://www2.census.gov/geo/tiger/TIGER2023/CD/) and saves them in the `data/tiger_cd_shapefiles` folder.
+
 ## Script: `combine.py`
 
 The `combine.py` script performs the following steps:
@@ -20,6 +41,7 @@ The `combine.py` script performs the following steps:
    - Contains 19,484 City Population rows
 
 4. **Extract City and State Information:**
+   - Clean-up some issues caused by the Human readable formatted Excel file
    - Extracts relevant city and state data from the population file.
 
 5. **Merge Datasets:**
@@ -34,7 +56,6 @@ The `combine.py` script performs the following steps:
 
 7. **Integrate Congressional District Data:**
    - [2023 | 118th Congress Districts Line Layer](https://www2.census.gov/geo/tiger/TIGER2023/CD/)
-   - **NOTE:** Created `download_data.py` script to automate download
    - Reads multiple congressional district shapefiles from .zip files located in the `data/tiger_cd_shapefiles` folder.
    - Combines these shapefiles and performs a spatial join with the merged cities data to assign each city its corresponding congressional district.
 
