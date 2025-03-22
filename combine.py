@@ -59,7 +59,7 @@ city_population['state'] = city_population['state_name'].map(state_abbreviations
 combined_cities = pd.merge(city_population, cities_geo, on=['city_name', 'state'], how='left')
 
 # Save the intermediate output
-combined_cities.to_csv('/Users/jp2213/gitHub/district_cities/data/combined_cities.csv', index=False)
+combined_cities.to_csv('~/gitHub/district-cities/output/combined_cities.csv', index=False)
 
 # Convert the combined DataFrame to a GeoDataFrame
 cities_gdf = gpd.GeoDataFrame(combined_cities, 
@@ -67,3 +67,43 @@ cities_gdf = gpd.GeoDataFrame(combined_cities,
                               crs="EPSG:4326")
 
 print("City geolocation and population data merged successfully.")
+
+# Step 2: Add congressional district information from multiple zip files
+import glob
+import pandas as pd
+
+# Get all .zip files in the data/tiger_cd_shapefiles folder
+zip_files = glob.glob("data/tiger_cd_shapefiles/*.zip")
+print("Number of zip files:", len(zip_files))
+
+# Create a list to hold each congressional district GeoDataFrame
+cd_gdfs = []
+for zip_file in zip_files:
+    gdf = gpd.read_file(zip_file)
+    cd_gdfs.append(gdf)
+
+# Combine all the congressional district shapefiles into one GeoDataFrame
+congressional_districts = gpd.GeoDataFrame(pd.concat(cd_gdfs, ignore_index=True), crs=cd_gdfs[0].crs)
+
+# Save the combined congressional districts GeoDataFrame to a new shapefile in a .zip file
+output_shp = '~/gitHub/district-cities/data/combined_cd_shapefile/combined_congressional_districts.shp'
+congressional_districts.to_file(output_shp)
+
+# Ensure the CRS matches the cities GeoDataFrame
+congressional_districts = congressional_districts.to_crs(cities_gdf.crs)
+
+# Perform spatial join to assign congressional district to each city (using 'within' predicate)
+cities_with_cd = gpd.sjoin(cities_gdf, congressional_districts, how='left', predicate='within')
+
+# Rename the district name column to 'congressional_district' (assuming the district name is in the 'NAME' column)
+cities_with_cd = cities_with_cd.rename(columns={'NAME': 'congressional_district'})
+
+# Save the resulting GeoDataFrame to a new shapefile
+output_shp = '~/gitHub/district-cities/output/shapefile/combined_cities_with_cd.shp'
+cities_with_cd.to_file(output_shp)
+
+# Save the resulting DataFrame to a new CSV file without the geometry column
+output_csv = '~/gitHub/district-cities/output/combined_cities_with_cd.csv'
+cities_with_cd.drop(columns='geometry').to_csv(output_csv, index=False)
+
+print("Cities data successfully joined with congressional district information.")
