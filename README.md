@@ -1,17 +1,43 @@
 # District Cities Data Processor
 
-This project processes and merges U.S. city geolocation and population data.
+This project processes and merges U.S. city geolocation and population data, and enhances it with congressional district information for spatial analysis.
 
 ## Script: `combine.py`
 
 The `combine.py` script performs the following steps:
 
-1. Loads U.S. city geolocation data from a text file.
-2. Cleans and standardizes city names and state abbreviations.
-3. Loads U.S. city population estimates from an Excel file.
-4. Extracts city and state information from the population data.
-5. Merges the geolocation and population data on city name and state.
-6. Saves the combined data to a CSV file.
-7. Converts the result into a GeoDataFrame for spatial analysis.
+1. **Load Geolocation Data:**
+   - Reads U.S. city geolocation data from a text file.
+   - Contains 32,329 rows of cities
 
-The output CSV and GeoDataFrame can be used for further geospatial processing or visualization.
+2. **Clean and Standardize Data:**
+   - Cleans and standardizes city names and state abbreviations.
+
+3. **Load Population Estimates:**
+   - Loads U.S. city population estimates from an Excel file.
+   - Contains 19,484 City Population rows
+
+4. **Extract City and State Information:**
+   - Extracts relevant city and state data from the population file.
+
+5. **Merge Datasets:**
+   - Merges the geolocation and population data based on city name and state.
+
+6. **Match and Validate City/State Combinations:**
+   - Processes 19,484 records from the 2023 Census file of Incorporated Places to find 19,473 unique city/state combinations.
+   - Matches these against the 2023 National Gazetteer Places files to extract geographic information.
+   - **Notes:** 
+     - 22 city/state combinations appear as duplicates (e.g., two towns named Reno in Texas); these may be due to data quality issues.
+     - The population file appears to be missing smaller incorporated places (e.g. Penn Valley, California)
+
+7. **Integrate Congressional District Data:**
+   - Reads multiple congressional district shapefiles from .zip files located in the `data/tiger_cd_shapefiles` folder.
+   - Combines these shapefiles and performs a spatial join with the merged cities data to assign each city its corresponding congressional district.
+
+8. **Output Final Data:**
+   - Saves the combined data (including congressional district information) to a CSV file.
+
+9. **Create a GeoDataFrame:**
+   - Converts the final CSV output into a GeoDataFrame for further spatial analysis or visualization.
+
+The output CSV and GeoDataFrame serve as key resources for subsequent geospatial processing and visualization.
