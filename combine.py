@@ -102,6 +102,9 @@ cities_with_cd = cities_with_cd.rename(columns={'NAME': 'congressional_district'
 output_shp = '~/gitHub/district-cities/output/shapefile/combined_cities_with_cd.shp'
 cities_with_cd.to_file(output_shp)
 
+# Drop unnecessary columns before saving to csv
+cities_with_cd = cities_with_cd.drop(columns=['FUNCSTAT', 'CDSESSN', 'LSAD', 'GEOIDFQ', 'GEOID', 'STATEFP', 'index_right', 'INTPTLONG', 'INTPTLAT_left', 'AWATER_SQMI', 'ALAND_SQMI', 'ALAND', 'AWATER', 'INTPTLAT_right','INTPTLON', 'MTFCC'])
+
 # Save the resulting DataFrame to a new CSV file without the geometry column
 output_csv = '~/gitHub/district-cities/output/combined_cities_with_cd.csv'
 cities_with_cd.drop(columns='geometry').to_csv(output_csv, index=False)
